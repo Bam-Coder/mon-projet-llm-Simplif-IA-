@@ -127,3 +127,8 @@ async def simplify(req: SimplifyRequest):
         raise
     except Exception as e:
         raise HTTPException(500, f"Erreur serveur : {str(e)}")
+if __name__ == "__main__":
+    import uvicorn
+    # Render définit automatiquement la variable PORT
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
