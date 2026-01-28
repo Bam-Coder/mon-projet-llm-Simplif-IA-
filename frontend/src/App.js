@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // URL de ton backend (à changer par l'URL Render après déploiement)
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://ton-api-render.onrender.com/api/simplify' 
+  ? 'https://mon-projet-llm-simplif-ia.onrender.com' 
   : 'http://127.0.0.1:8000/api/simplify';
 
 function App() {
