@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-// URL de ton backend (à changer par l'URL Render après déploiement)
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://mon-projet-llm-simplif-ia.onrender.com' 
+  ? 'https://mon-projet-llm-simplif-ia.onrender.com/api/simplify'
   : 'http://127.0.0.1:8000/api/simplify';
-
 function App() {
   const [text, setText] = useState('');
   const [level, setLevel] = useState('👶 Enfant (5 ans)');
