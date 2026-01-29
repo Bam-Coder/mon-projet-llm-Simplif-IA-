@@ -144,7 +144,7 @@ const styles = {
   card: {
     width: '100%',
     maxWidth: '850px',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backgroundColor: 'rgba(249, 193, 9, 0.96)',
     borderRadius: '28px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
     padding: '40px',
