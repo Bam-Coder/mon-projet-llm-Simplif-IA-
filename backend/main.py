@@ -37,8 +37,9 @@ Explique ce contenu en t’adaptant automatiquement au niveau du lecteur.
 Commence très simple, puis ajoute progressivement de la clarté.
 Chaque phrase doit pouvoir être comprise seule.
 Si une phrase peut créer de la confusion, simplifie-la encore.
+Propose au maximum 5 phrases plus claires.
 
-Objectif : zéro ambiguïté, compréhension parfaite pour tout public de facon court max 7lignes.
+Objectif : zéro ambiguïté, compréhension parfaite pour tout public.
 """,
 
     "enfant": """
@@ -47,8 +48,9 @@ Utilise uniquement des mots très simples.
 Explique avec des objets du quotidien (jouets, bonbons, ballon).
 Aucune abstraction. Aucune complexité.
 Fais des phrases très courtes.
+Propose au maximum 3 phrases plus claires.
 
-Objectif : compréhension immédiate sans questions de facon court max 7lignes.
+Objectif : compréhension immédiate sans questions.
 """,
 
     "ado": """
@@ -56,8 +58,9 @@ Explique ce contenu comme un grand frère intelligent et cool.
 Utilise un langage simple et naturel.
 Donne un seul exemple concret de la vie quotidienne.
 Va droit au but.
+Propose au maximum 7 phrases plus claires.
 
-Objectif : compréhension rapide et intuitive de facon court max 7lignes.
+Objectif : compréhension rapide et intuitive.
 """,
 
     "etudiant": """
@@ -65,8 +68,8 @@ Explique ce contenu comme un professeur très pédagogue.
 Structure l’explication clairement.
 Explique le quoi, le pourquoi et le comment.
 Supprime tout jargon inutile.
-
-Objectif : compréhension claire et mémorisation facile de facon court max 7lignes.
+Propose au maximum 8 phrases plus claires.
+Objectif : compréhension claire et mémorisation.
 """,
 
     "genie": """
@@ -77,8 +80,8 @@ Utilise uniquement des mots simples.
 Privilégie les images mentales et les exemples concrets.
 Si un mot peut être remplacé par un mot plus simple, fais-le.
 Élimine toute complexité inutile.
-
-Objectif : compréhension totale dès la première lecture de facon court max 7lignes.
+Propose au maximum 12 phrases plus claires.
+Objectif : compréhension totale dès la première lecture.
 """,
 }
 
