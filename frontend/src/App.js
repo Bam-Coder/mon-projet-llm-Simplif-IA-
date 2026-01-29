@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Configuration de l'URL dynamique (Render en prod, Local en dev)
 const API_URL = process.env.NODE_ENV === 'production' 
   ? 'https://mon-projet-llm-simplif-ia.onrender.com/api/simplify'
   : 'http://127.0.0.1:8000/api/simplify';
+
 function App() {
   const [text, setText] = useState('');
   const [level, setLevel] = useState('👶 Enfant (5 ans)');
@@ -21,22 +23,35 @@ function App() {
       const res = await axios.post(API_URL, { text, level, provider });
       setResult(res.data.output);
     } catch (err) {
-      setResult(`❌ Erreur : ${err.response?.data?.detail || "Serveur injoignable"}`);
+      setResult(`❌ Erreur : ${err.response?.data?.detail || "Le serveur ne répond pas. Vérifiez si Render est actif."}`);
     } finally {
       setLoading(false);
     }
   };
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(result);
+    alert("Texte copié dans le presse-papier !");
+  };
+
+  const speak = () => {
+    window.speechSynthesis.cancel(); // Stoppe toute lecture en cours
+    const utterance = new SpeechSynthesisUtterance(result);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* Header Section */}
+        {/* Header */}
         <header style={styles.header}>
           <h1 style={styles.title}>Simplif<span style={{color: '#6366f1'}}>IA</span> 💡</h1>
           <p style={styles.subtitle}>L'intelligence artificielle qui rend le savoir accessible.</p>
         </header>
 
-        {/* Configuration Row */}
+        {/* Configuration */}
         <div style={styles.configGrid}>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Moteur de réflexion</label>
@@ -63,26 +78,34 @@ function App() {
           </div>
         </div>
 
-        {/* Input Area */}
+        {/* Text Input */}
         <div style={styles.inputGroup}>
           <label style={styles.label}>Contenu à vulgariser</label>
           <textarea
-            placeholder="Collez ici votre texte complexe..."
+            placeholder="Collez ici votre texte complexe (article, contrat, cours...)"
             value={text}
             onChange={(e) => setText(e.target.value)}
             style={styles.textarea}
           />
         </div>
 
-        {/* Action Button */}
+        {/* Main Action */}
         <button onClick={handleProcess} disabled={loading} style={loading ? styles.btnDisabled : styles.btn}>
-          {loading ? "Traitement en cours..." : "Simplifier maintenant ✨"}
+          {loading ? "L'IA analyse le texte... 🧠" : "Simplifier maintenant ✨"}
         </button>
 
-        {/* Result Area */}
+        {/* Result Display */}
         {result && (
           <div style={result.includes("❌") ? styles.resultError : styles.resultSuccess}>
-            <div style={styles.resultHeader}>Résultat pour : {level}</div>
+            <div style={styles.resultHeaderRow}>
+              <span style={styles.resultHeader}>Résultat pour : {level}</span>
+              {!result.includes("❌") && (
+                <div style={styles.actionIcons}>
+                  <button onClick={speak} style={styles.iconBtn} title="Écouter">🔊</button>
+                  <button onClick={copyToClipboard} style={styles.iconBtn} title="Copier">📋</button>
+                </div>
+              )}
+            </div>
             <p style={styles.resultText}>{result}</p>
           </div>
         )}
@@ -91,7 +114,6 @@ function App() {
   );
 }
 
-// --- JSS Styles Pro ---
 const styles = {
   container: {
     minHeight: '100vh',
@@ -103,94 +125,126 @@ const styles = {
     margin: 0,
     fontFamily: '"Inter", sans-serif',
     boxSizing: 'border-box',
-    
-    /* IMAGE NETTE ET PROPRE */
-    // On enlève le voile blanc et on met un voile noir très léger (0.3) pour le contraste
-    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
                       url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072')`,
-    
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
     backgroundAttachment: 'fixed',
   },
-
   card: {
     width: '100%',
     maxWidth: '850px',
-    // La carte est bien opaque pour être lisible
-    backgroundColor: 'rgba(246, 218, 176, 0.95)', 
-    borderRadius: '24px',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', // Ombre plus forte pour détacher du fond
+    backgroundColor: 'rgba(255, 255, 255, 0.96)', 
+    borderRadius: '28px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
     padding: '40px',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
     boxSizing: 'border-box',
-    backdropFilter: 'blur(10px)', // Effet de flou sur l'image derrière la carte
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
   },
   header: { textAlign: 'center', marginBottom: '35px' },
-  title: { fontSize: '2.5rem', fontWeight: '800', color: '#1e293b', margin: '0' },
+  title: { fontSize: '2.8rem', fontWeight: '800', color: '#1e293b', margin: '0', letterSpacing: '-1px' },
   subtitle: { color: '#64748b', fontSize: '1.1rem', marginTop: '10px' },
   configGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '25px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' },
-  label: { fontSize: '0.9rem', fontWeight: '600', color: '#475569', marginLeft: '4px' },
+  label: { fontSize: '0.95rem', fontWeight: '600', color: '#475569', marginLeft: '4px' },
   select: {
-    padding: '12px',
-    borderRadius: '12px',
+    padding: '14px',
+    borderRadius: '14px',
     border: '1px solid #cbd5e1',
     fontSize: '1rem',
     outline: 'none',
-    transition: 'border 0.2s',
     cursor: 'pointer',
+    backgroundColor: '#fff',
   },
   buttonGroup: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
   levelBtn: {
-    padding: '10px 18px',
-    borderRadius: '12px',
+    padding: '12px 20px',
+    borderRadius: '14px',
     border: '1px solid #e2e8f0',
     background: 'white',
     color: '#64748b',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     fontSize: '0.9rem',
     fontWeight: '500',
   },
-  levelBtnActive: { background: '#6366f1', color: 'white', borderColor: '#6366f1', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' },
+  levelBtnActive: { 
+    background: '#6366f1', 
+    color: 'white', 
+    borderColor: '#6366f1', 
+    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.35)',
+    transform: 'translateY(-2px)'
+  },
   textarea: {
     width: '100%',
-    minHeight: '160px',
-    padding: '15px',
-    borderRadius: '16px',
+    minHeight: '180px',
+    padding: '18px',
+    borderRadius: '18px',
     border: '1px solid #cbd5e1',
-    fontSize: '1rem',
-    lineHeight: '1.5',
+    fontSize: '1.05rem',
+    lineHeight: '1.6',
     outline: 'none',
     resize: 'vertical',
     boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
   },
   btn: {
     width: '100%',
-    padding: '16px',
-    borderRadius: '16px',
+    padding: '18px',
+    borderRadius: '18px',
     background: '#1e293b',
     color: 'white',
     border: 'none',
-    fontSize: '1.1rem',
-    fontWeight: '600',
+    fontSize: '1.15rem',
+    fontWeight: '700',
     cursor: 'pointer',
-    transition: 'transform 0.1s, background 0.2s',
+    transition: 'all 0.2s',
   },
-  btnDisabled: { background: '#94a3b8', width: '100%', padding: '16px', borderRadius: '16px', border: 'none', color: 'white' },
+  btnDisabled: { 
+    background: '#94a3b8', 
+    width: '100%', 
+    padding: '18px', 
+    borderRadius: '18px', 
+    border: 'none', 
+    color: 'white',
+    cursor: 'not-allowed'
+  },
   resultSuccess: {
     marginTop: '30px',
-    padding: '25px',
+    padding: '30px',
     background: '#f8fafc',
-    borderRadius: '20px',
+    borderRadius: '24px',
     border: '1px solid #e2e8f0',
-    borderLeft: '6px solid #6366f1',
+    borderLeft: '8px solid #6366f1',
   },
-  resultError: { marginTop: '30px', padding: '25px', background: '#fef2f2', borderRadius: '20px', border: '1px solid #fee2e2', borderLeft: '6px solid #ef4444' },
-  resultHeader: { fontWeight: '700', marginBottom: '10px', color: '#1e293b', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' },
-  resultText: { margin: 0, color: '#334155', lineHeight: '1.7', fontSize: '1.05rem' },
+  resultError: { 
+    marginTop: '30px', 
+    padding: '30px', 
+    background: '#fef2f2', 
+    borderRadius: '24px', 
+    border: '1px solid #fee2e2', 
+    borderLeft: '8px solid #ef4444' 
+  },
+  resultHeaderRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  resultHeader: { fontWeight: '800', color: '#1e293b', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  actionIcons: { display: 'flex', gap: '12px' },
+  iconBtn: {
+    background: 'white',
+    border: '1px solid #e2e8f0',
+    borderRadius: '10px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+    fontSize: '1.3rem',
+    transition: 'transform 0.1s, box-shadow 0.2s',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  },
+  resultText: { margin: 0, color: '#334155', lineHeight: '1.8', fontSize: '1.1rem' },
 };
 
 export default App;
