@@ -178,24 +178,60 @@ async def analyze(req: SimplifyRequest):
     """
 
     try:
-        response = client.responses.create(
-            model="gpt-4o-mini",
-            input=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": req.text}
-            ]
+        # Initialisation Gemini
+        client = genai.Client(api_key=GEMINI_KEY)
+
+        # Récupération des modèles disponibles
+        models = client.models.list()
+        model_names = [m.name for m in models]
+
+        # Priorité des modèles
+        preferred = [
+            "models/gemini-2.5-flash",
+            "models/gemini-2.5-pro",
+            "models/gemini-flash-latest"
+        ]
+
+        # Choix automatique du meilleur modèle dispo
+        chosen_model = next(
+            (m for m in preferred if m in model_names),
+            model_names[0]
         )
 
-        import json
+        # Prompt final
+        prompt = f"""
+            Tu es un expert en clarté de texte.
+            Réponds UNIQUEMENT en JSON avec la structure :
+        {{
+            "score": 0-100,
+            "suggestions": [
+                {{"original": "...", "suggestion": "..."}}
+            ]
+        }}
+
+        Texte à analyser :
+        {req.text}
+        """
+
+        # Appel Gemini
+        response = client.models.generate_content(
+            model=chosen_model,
+            contents=prompt
+        )
+
+        # Parsing JSON
         try:
-            result_json = json.loads(response.output_text)
-        except:
-            result_json = {"score": None, "suggestions": []}
+            result_json = json.loads(response.text)
+        except Exception:
+            result_json = {
+            "score": None,
+            "suggestions": []
+        }
 
         return result_json
 
     except Exception as e:
-        return {"error": f"❌ Erreur Analyse : {str(e)}"}
+        return {"error": f"❌ Erreur Gemini Analyse : {str(e)}"}
 
 
 # ================== RUN ==================

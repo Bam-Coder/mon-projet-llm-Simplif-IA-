@@ -132,7 +132,7 @@ function App() {
         <button onClick={handleProcess} disabled={loading} style={loading ? styles.btnDisabled : styles.btn}>
           {loading ? "L'IA analyse le texte... 🧠" : "Simplifier maintenant ✨"}
         </button>
-        
+      
         {/* Voix & vitesse */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Lecture audio</label>
