@@ -18,7 +18,7 @@ const LEVELS = [
 function App() {
   const [text, setText] = useState('');
   const [level, setLevel] = useState('simplifier');
-  const [provider, setProvider] = useState('openai');
+  const [provider, setProvider] = useState('gemini');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -66,8 +66,8 @@ function App() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Moteur de réflexion</label>
             <select value={provider} onChange={(e) => setProvider(e.target.value)} style={styles.select}>
-              <option value="openai">OpenAI (GPT-4o)</option>
               <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI (GPT-4o)</option>
               <option value="deepseek">DeepSeek AI</option>
             </select>
           </div>
