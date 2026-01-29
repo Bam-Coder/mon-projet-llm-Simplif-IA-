@@ -117,23 +117,6 @@ function App() {
             </div>
           </div>
 
-          {/* Voix & vitesse */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Lecture audio</label>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <select value={voice?.name || ''} onChange={(e) => {
-                const v = voices.find(v => v.name === e.target.value);
-                setVoice(v);
-              }} style={styles.select}>
-                <option value="">Voix par défaut</option>
-                {voices.map(v => <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>)}
-              </select>
-              <input type="range" min="0.5" max="2" step="0.1" value={rate} onChange={e => setRate(e.target.value)} />
-              <span>{rate}x</span>
-            </div>
-          </div>
-        </div>
-
         {/* Texte */}
         <div style={styles.inputGroup}>
           <label style={styles.label}>Contenu à vulgariser</label>
@@ -149,7 +132,23 @@ function App() {
         <button onClick={handleProcess} disabled={loading} style={loading ? styles.btnDisabled : styles.btn}>
           {loading ? "L'IA analyse le texte... 🧠" : "Simplifier maintenant ✨"}
         </button>
-
+        
+        {/* Voix & vitesse */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Lecture audio</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <select value={voice?.name || ''} onChange={(e) => {
+                const v = voices.find(v => v.name === e.target.value);
+                setVoice(v);
+              }} style={styles.select}>
+                <option value="">Voix par défaut</option>
+                {voices.map(v => <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>)}
+              </select>
+              <input type="range" min="0.5" max="2" step="0.1" value={rate} onChange={e => setRate(e.target.value)} />
+              <span>{rate}x</span>
+            </div>
+          </div>
+        </div>
         {/* Résultat */}
         {result && (
           <div style={result.includes("❌") ? styles.resultError : styles.resultSuccess}>
