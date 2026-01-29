@@ -17,7 +17,7 @@ const LEVELS = [
 
 function App() {
   const [text, setText] = useState('');
-  const [level, setLevel] = useState('Simplifer');
+  const [level, setLevel] = useState('simplifier');
   const [provider, setProvider] = useState('openai');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
