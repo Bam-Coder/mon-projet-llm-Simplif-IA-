@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 from fastapi import FastAPI, HTTPException
@@ -37,7 +38,7 @@ Commence très simple, puis ajoute progressivement de la clarté.
 Chaque phrase doit pouvoir être comprise seule.
 Si une phrase peut créer de la confusion, simplifie-la encore.
 
-Objectif : zéro ambiguïté, compréhension parfaite pour tout public.
+Objectif : zéro ambiguïté, compréhension parfaite pour tout public de facon court max 7lignes.
 """,
 
     "enfant": """
@@ -47,7 +48,7 @@ Explique avec des objets du quotidien (jouets, bonbons, ballon).
 Aucune abstraction. Aucune complexité.
 Fais des phrases très courtes.
 
-Objectif : compréhension immédiate sans questions.
+Objectif : compréhension immédiate sans questions de facon court max 7lignes.
 """,
 
     "ado": """
@@ -56,7 +57,7 @@ Utilise un langage simple et naturel.
 Donne un seul exemple concret de la vie quotidienne.
 Va droit au but.
 
-Objectif : compréhension rapide et intuitive.
+Objectif : compréhension rapide et intuitive de facon court max 7lignes.
 """,
 
     "etudiant": """
@@ -65,7 +66,7 @@ Structure l’explication clairement.
 Explique le quoi, le pourquoi et le comment.
 Supprime tout jargon inutile.
 
-Objectif : compréhension claire et mémorisation facile.
+Objectif : compréhension claire et mémorisation facile de facon court max 7lignes.
 """,
 
     "genie": """
@@ -77,7 +78,7 @@ Privilégie les images mentales et les exemples concrets.
 Si un mot peut être remplacé par un mot plus simple, fais-le.
 Élimine toute complexité inutile.
 
-Objectif : compréhension totale dès la première lecture.
+Objectif : compréhension totale dès la première lecture de facon court max 7lignes.
 """,
 }
 
