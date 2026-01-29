@@ -8,16 +8,16 @@ const API_URL = process.env.NODE_ENV === 'production'
 
 // Mapping UI <-> API
 const LEVELS = [
+  { label: "🧩 Simplifier", value: "simplifier" },
   { label: "👶 Enfant (5 ans)", value: "enfant" },
   { label: "😎 Adolescent", value: "ado" },
   { label: "🎓 Étudiant", value: "etudiant" },
-  { label: "🧠 Génie", value: "genie" },
-  { label: "🧩 Adaptatif (Bonus)", value: "bonus" }
+  { label: "🧠 Génie", value: "genie" }
 ];
 
 function App() {
   const [text, setText] = useState('');
-  const [level, setLevel] = useState('enfant');
+  const [level, setLevel] = useState('simplifer');
   const [provider, setProvider] = useState('openai');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);

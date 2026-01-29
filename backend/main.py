@@ -27,11 +27,22 @@ app.add_middleware(
 # ================== SCHEMA ==================
 class SimplifyRequest(BaseModel):
     text: str
-    level: str        # enfant | ado | etudiant | genie | bonus
+    level: str        # simplifier | enfant | ado | etudiant | genie 
     provider: str     # openai | gemini | deepseek
 
 # ================== PROMPTS ==================
 PROMPTS = {
+        "simplifier": """
+Explique ce contenu en t’adaptant automatiquement au niveau du lecteur.
+
+Commence très simple, puis ajoute progressivement de la clarté,
+sans jamais compliquer.
+Chaque phrase doit pouvoir être comprise seule.
+Si une phrase peut créer de la confusion, simplifie-la encore.
+
+Objectif : zéro ambiguïté, compréhension parfaite pour tout public.
+""",
+
     "enfant": """
 Explique ce contenu comme si tu parlais à un enfant de 5 ans.
 Utilise uniquement des mots très simples.
@@ -71,20 +82,9 @@ Si un mot peut être remplacé par un mot plus simple, fais-le.
 
 Objectif : compréhension totale dès la première lecture.
 """,
-
-    "bonus": """
-Explique ce contenu en t’adaptant automatiquement au niveau du lecteur.
-
-Commence très simple, puis ajoute progressivement de la clarté,
-sans jamais compliquer.
-Chaque phrase doit pouvoir être comprise seule.
-Si une phrase peut créer de la confusion, simplifie-la encore.
-
-Objectif : zéro ambiguïté, compréhension parfaite pour tout public.
-"""
 }
 
-DEFAULT_PROMPT = PROMPTS["genie"]
+DEFAULT_PROMPT = PROMPTS["simplifier"]
 
 # ================== ROUTE ==================
 @app.post("/api/simplify")
