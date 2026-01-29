@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Configuration API
-const API_URL = process.env.NODE_ENV === 'production' 
+// Config API
+const API_URL = process.env.NODE_ENV === 'production'
   ? 'https://mon-projet-llm-simplif-ia.onrender.com/api/simplify'
   : 'http://127.0.0.1:8000/api/simplify';
+
+const ANALYZE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://mon-projet-llm-simplif-ia.onrender.com/api/analyze'
+  : 'http://127.0.0.1:8000/api/analyze';
 
 // Mapping UI <-> API
 const LEVELS = [
@@ -22,13 +26,36 @@ function App() {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [clarityScore, setClarityScore] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [voice, setVoice] = useState(null);
+  const [rate, setRate] = useState(1.0);
+
+  // Charger voix disponibles pour SpeechSynthesis
+  const [voices, setVoices] = useState([]);
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+    const loadVoices = () => setVoices(synth.getVoices());
+    synth.onvoiceschanged = loadVoices;
+    loadVoices();
+  }, []);
+
   const handleProcess = async () => {
     if (!text) return alert("Veuillez saisir un texte.");
     setLoading(true);
     setResult('');
+    setClarityScore(null);
+    setSuggestions([]);
+
     try {
+      // Simplification
       const res = await axios.post(API_URL, { text, level, provider });
       setResult(res.data.output);
+
+      // Analyse clarté
+      const analyzeRes = await axios.post(ANALYZE_URL, { text: res.data.output, level, provider });
+      setClarityScore(analyzeRes.score);
+      setSuggestions(analyzeRes.suggestions || []);
     } catch (err) {
       setResult(`❌ Erreur : ${err.response?.data?.detail || "Le serveur ne répond pas."}`);
     } finally {
@@ -42,15 +69,16 @@ function App() {
   };
 
   const speak = () => {
+    if (!result) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(result);
     utterance.lang = 'fr-FR';
-    utterance.rate = 1.0;
+    utterance.rate = rate;
+    if (voice) utterance.voice = voice;
     window.speechSynthesis.speak(utterance);
   };
 
-  const getLevelLabel = (value) =>
-    LEVELS.find(l => l.value === value)?.label || value;
+  const getLevelLabel = (value) => LEVELS.find(l => l.value === value)?.label || value;
 
   return (
     <div style={styles.container}>
@@ -63,6 +91,7 @@ function App() {
 
         {/* Configuration */}
         <div style={styles.configGrid}>
+          {/* Provider */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Moteur de réflexion</label>
             <select value={provider} onChange={(e) => setProvider(e.target.value)} style={styles.select}>
@@ -71,14 +100,15 @@ function App() {
               <option value="deepseek">DeepSeek AI</option>
             </select>
           </div>
-          
+
+          {/* Niveau */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Public cible</label>
             <div style={styles.buttonGroup}>
               {LEVELS.map(l => (
-                <button 
-                  key={l.value} 
-                  onClick={() => setLevel(l.value)} 
+                <button
+                  key={l.value}
+                  onClick={() => setLevel(l.value)}
                   style={{...styles.levelBtn, ...(level === l.value ? styles.levelBtnActive : {})}}
                 >
                   {l.label}
@@ -86,9 +116,25 @@ function App() {
               ))}
             </div>
           </div>
+
+          {/* Voix & vitesse */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Lecture audio</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <select value={voice?.name || ''} onChange={(e) => {
+                const v = voices.find(v => v.name === e.target.value);
+                setVoice(v);
+              }} style={styles.select}>
+                <option value="">Voix par défaut</option>
+                {voices.map(v => <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>)}
+              </select>
+              <input type="range" min="0.5" max="2" step="0.1" value={rate} onChange={e => setRate(e.target.value)} />
+              <span>{rate}x</span>
+            </div>
+          </div>
         </div>
 
-        {/* Text Input */}
+        {/* Texte */}
         <div style={styles.inputGroup}>
           <label style={styles.label}>Contenu à vulgariser</label>
           <textarea
@@ -99,12 +145,12 @@ function App() {
           />
         </div>
 
-        {/* Main Action */}
+        {/* Action */}
         <button onClick={handleProcess} disabled={loading} style={loading ? styles.btnDisabled : styles.btn}>
           {loading ? "L'IA analyse le texte... 🧠" : "Simplifier maintenant ✨"}
         </button>
 
-        {/* Result Display */}
+        {/* Résultat */}
         {result && (
           <div style={result.includes("❌") ? styles.resultError : styles.resultSuccess}>
             <div style={styles.resultHeaderRow}>
@@ -117,6 +163,23 @@ function App() {
               )}
             </div>
             <p style={styles.resultText}>{result}</p>
+
+            {/* Score de clarté */}
+            {clarityScore !== null && (
+              <p style={{marginTop: '15px', fontWeight: '600'}}>Score de clarté : {clarityScore}/100</p>
+            )}
+
+            {/* Suggestions */}
+            {suggestions.length > 0 && (
+              <div style={{marginTop: '10px'}}>
+                <h4>Suggestions d’amélioration :</h4>
+                <ul>
+                  {suggestions.map((s, i) => (
+                    <li key={i}><b>{s.original}</b> → {s.suggestion}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -124,6 +187,7 @@ function App() {
   );
 }
 
+// ================== STYLES ==================
 const styles = {
   container: {
     minHeight: '100vh',
@@ -135,7 +199,7 @@ const styles = {
     margin: 0,
     fontFamily: '"Inter", sans-serif',
     boxSizing: 'border-box',
-    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
                       url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -143,10 +207,10 @@ const styles = {
   },
   card: {
     width: '100%',
-    maxWidth: '850px',
+    maxWidth: '900px',
     backgroundColor: 'rgba(249, 193, 9, 0.96)',
     borderRadius: '28px',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
     padding: '40px',
     boxSizing: 'border-box',
     backdropFilter: 'blur(12px)',

@@ -9,7 +9,6 @@ from google import genai
 
 # ================== CONFIG ==================
 load_dotenv()
-
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -32,11 +31,9 @@ class SimplifyRequest(BaseModel):
 
 # ================== PROMPTS ==================
 PROMPTS = {
-        "simplifier": """
+    "simplifier": """
 Explique ce contenu en t’adaptant automatiquement au niveau du lecteur.
-
-Commence très simple, puis ajoute progressivement de la clarté,
-sans jamais compliquer.
+Commence très simple, puis ajoute progressivement de la clarté.
 Chaque phrase doit pouvoir être comprise seule.
 Si une phrase peut créer de la confusion, simplifie-la encore.
 
@@ -86,7 +83,7 @@ Objectif : compréhension totale dès la première lecture.
 
 DEFAULT_PROMPT = PROMPTS["simplifier"]
 
-# ================== ROUTE ==================
+# ================== ROUTES ==================
 @app.post("/api/simplify")
 async def simplify(req: SimplifyRequest):
     system_prompt = PROMPTS.get(req.level.lower(), DEFAULT_PROMPT)
@@ -95,7 +92,6 @@ async def simplify(req: SimplifyRequest):
     if req.provider.lower() == "openai":
         if not OPENAI_KEY:
             return {"output": "⚠️ Clé OpenAI manquante ou crédit insuffisant."}
-
         try:
             client = OpenAI(api_key=OPENAI_KEY)
             response = client.responses.create(
@@ -106,7 +102,6 @@ async def simplify(req: SimplifyRequest):
                 ]
             )
             return {"output": response.output_text}
-
         except Exception as e:
             return {"output": f"❌ Erreur OpenAI : {str(e)}"}
 
@@ -114,26 +109,22 @@ async def simplify(req: SimplifyRequest):
     elif req.provider.lower() == "gemini":
         if not GEMINI_KEY:
             return {"output": "⚠️ Clé Gemini manquante ou crédit insuffisant."}
-
         try:
             client = genai.Client(api_key=GEMINI_KEY)
             models = client.models.list()
             model_names = [m.name for m in models]
-
             preferred = [
                 "models/gemini-2.5-flash",
                 "models/gemini-2.5-pro",
                 "models/gemini-flash-latest"
             ]
             chosen_model = next((m for m in preferred if m in model_names), model_names[0])
-
             prompt = f"{system_prompt}\n\nTexte : {req.text}"
             response = client.models.generate_content(
                 model=chosen_model,
                 contents=prompt
             )
             return {"output": response.text}
-
         except Exception as e:
             return {"output": f"❌ Erreur Gemini : {str(e)}"}
 
@@ -141,13 +132,9 @@ async def simplify(req: SimplifyRequest):
     elif req.provider.lower() == "deepseek":
         if not DEEPSEEK_KEY:
             return {"output": "⚠️ Clé DeepSeek manquante ou crédit insuffisant."}
-
         try:
             url = "https://api.deepseek.com/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {DEEPSEEK_KEY}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"}
             payload = {
                 "model": "deepseek-chat",
                 "messages": [
@@ -155,19 +142,61 @@ async def simplify(req: SimplifyRequest):
                     {"role": "user", "content": req.text}
                 ]
             }
-
             r = requests.post(url, json=payload, headers=headers, timeout=15)
             r.raise_for_status()
             data = r.json()
-
             output = data.get("choices", [{}])[0].get("message", {}).get("content")
             return {"output": output or "⚠️ Réponse vide."}
-
         except Exception as e:
             return {"output": f"❌ Erreur DeepSeek : {str(e)}"}
 
     else:
         raise HTTPException(status_code=400, detail="Provider inconnu")
+
+
+@app.post("/api/analyze")
+async def analyze(req: SimplifyRequest):
+    """
+    Analyse un texte et retourne :
+    - score de clarté 0-100
+    - suggestions d'amélioration (phrases)
+    """
+    if not OPENAI_KEY:
+        return {"error": "⚠️ Clé OpenAI manquante."}
+
+    client = OpenAI(api_key=OPENAI_KEY)
+
+    system_prompt = f"""
+    Tu es un professeur pédagogue spécialisé en clarté de texte.
+    Réponds **uniquement en JSON** avec la structure :
+    {{
+      "score": int (0-100),
+      "suggestions": [{{"original": str, "suggestion": str}}]
+    }}
+    Analyse ce texte et remplis ces champs :
+    Texte : {req.text}
+    """
+
+    try:
+        response = client.responses.create(
+            model="gpt-4o-mini",
+            input=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": req.text}
+            ]
+        )
+
+        import json
+        try:
+            result_json = json.loads(response.output_text)
+        except:
+            result_json = {"score": None, "suggestions": []}
+
+        return result_json
+
+    except Exception as e:
+        return {"error": f"❌ Erreur Analyse : {str(e)}"}
+
 
 # ================== RUN ==================
 if __name__ == "__main__":
